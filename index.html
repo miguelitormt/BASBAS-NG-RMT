@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASBAS NG RMT</title>
+    <style>
+        body {
+            background-color: #0A192F; /* Dark Blue */
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #64ffda; /* Light Blue-Green Accent */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        button {
+            background-color: #112D4E; /* Darker Blue */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #3A506B;
+        }
+
+        #options button {
+            display: block;
+            width: 50%;
+            margin: 10px auto;
+            padding: 12px;
+            font-size: 18px;
+            background-color: #1B4965;
+            border-radius: 8px;
+        }
+
+        #options button:hover {
+            background-color: #5FA8D3;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #question-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Opening Page with Instructions -->
+    <div id="opening-container">
+        <h1>Welcome to BASBAS NG RMT</h1>
+        <p><strong>Instructions:</strong></p>
+        <ul style="list-style-type: none; padding: 0;">
+            <li>📂 Click "Upload File" to select a quiz file.</li>
+            <li>▶ Click "Start Quiz" to begin.</li>
+            <li>✅ Select the correct answer to proceed.</li>
+            <li>🏆 Click "End Quiz" anytime to see your score.</li>
+        </ul>
+        <button onclick="proceedToQuiz()">Proceed</button>
+    </div>
+
+    <!-- Quiz Upload & Start Page -->
+    <div id="quiz-container" class="hidden">
+        <h2>Upload Quiz File</h2>
+        <input type="file" id="fileInput">
+        <button id="startButton" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <!-- Quiz Question Page -->
+    <div id="question-container" class="hidden">
+        <h2 id="question"></h2>
+        <div id="options"></div>
+        <button onclick="endQuiz()">End Quiz</button> <!-- NEW End Quiz button -->
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
