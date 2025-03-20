@@ -1,8 +1,18 @@
 let questions = [];
+let shuffledQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let previousScore = null;
 let totalQuestions = 0;
+
+// Function to shuffle questions randomly
+function shuffleQuestions() {
+    shuffledQuestions = [...questions];
+    for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+    }
+}
 
 // Function to show quiz page
 function proceedToQuiz() {
@@ -30,24 +40,51 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
 
 // Function to parse questions from text file
 function parseQuestions(text) {
-    const lines = text.split("\n").map(line => line.trim()).filter(line => line !== "");
+    const blocks = text.split("\n\n"); // Split questions by blank lines
     questions = [];
 
-    for (let i = 0; i < lines.length; i += 7) {
-        if (i + 6 < lines.length) { // Ensure a full question set
+    blocks.forEach(block => {
+        const lines = block.split("\n").map(line => line.trim());
+        let questionText = "";
+        let options = [];
+        let correctAnswer = "";
+        let explanation = "No explanation provided.";
+
+        lines.forEach(line => {
+            if (/^question:/i.test(line)) {
+                questionText = line.replace(/^question:\s*/i, "").trim();
+            } else if (/^answer:/i.test(line)) {
+                correctAnswer = line.replace(/^answer:\s*/i, "").trim().toUpperCase();
+            } else if (/^explanation:/i.test(line)) {
+                explanation = line.replace(/^explanation:\s*/i, "").trim();
+            } else {
+                const match = line.match(/^([A-D]|[a-d])[\)\.\-]?\s*(.*)/i);
+                if (match) {
+                    options.push(match[2]); // Extract option text
+                }
+            }
+        });
+
+        const answerIndex = options.findIndex(opt => opt.toLowerCase() === correctAnswer.toLowerCase());
+        if (answerIndex !== -1) {
+            correctAnswer = String.fromCharCode(65 + answerIndex);
+        }
+
+        if (questionText && options.length === 4 && correctAnswer) {
             questions.push({
-                question: lines[i],
-                options: [lines[i + 1], lines[i + 2], lines[i + 3], lines[i + 4]],
-                answer: lines[i + 5].toUpperCase(),
-                explanation: lines[i + 6] || "No explanation provided."
+                question: questionText,
+                options: options,
+                answer: correctAnswer,
+                explanation: explanation
             });
         }
-    }
+    });
 
     if (totalQuestions === 0) {
         totalQuestions = questions.length;
-        resetQuizState();
     }
+
+    resetQuizState();
 }
 
 // Function to start quiz
@@ -60,6 +97,9 @@ function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
 
+    // Randomize questions before starting
+    shuffleQuestions();
+
     document.getElementById('quiz-container').style.display = 'none';
     document.getElementById('question-container').style.display = 'block';
 
@@ -68,16 +108,16 @@ function startQuiz() {
 
 // Function to display a question
 function showQuestion() {
-    if (currentQuestionIndex >= questions.length) {
+    if (currentQuestionIndex >= shuffledQuestions.length) {
         endQuiz();
         return;
     }
 
-    const questionObj = questions[currentQuestionIndex];
+    const questionObj = shuffledQuestions[currentQuestionIndex];
     document.getElementById('question').innerText = questionObj.question;
 
     const optionsDiv = document.getElementById('options');
-    optionsDiv.innerHTML = ""; // Clear previous options
+    optionsDiv.innerHTML = "";
 
     questionObj.options.forEach((option, index) => {
         const button = document.createElement("button");
@@ -86,14 +126,13 @@ function showQuestion() {
         optionsDiv.appendChild(button);
     });
 
-    // Ensure "End Quiz" button is visible
     document.getElementById('endQuizBtn').style.display = 'block';
 }
 
 // Function to check answer
 function checkAnswer(selected, correct, explanation) {
     let message = "";
-    
+
     if (selected === correct) {
         score++;
         message = "✅ Correct!";
@@ -115,13 +154,12 @@ function endQuiz() {
         improvementMessage = `<p>📈 You improved by <strong>${improvement.toFixed(2)}%</strong> compared to your last score!</p>`;
     }
 
-    previousScore = score; // Store score for next attempt
+    previousScore = score;
 
     document.getElementById('question-container').innerHTML = `
         <h2>Quiz Complete!</h2>
         <p>Your score: ${score} / ${totalQuestions}</p>
         ${improvementMessage}
-        <p><strong>Note:</strong> If the page is refreshed or restarted, the previous score will not be stored.</p>
         <button onclick="restartQuiz()">Restart Quiz</button>
         <button onclick="returnToHome()">Return to Home</button>
     `;
@@ -131,6 +169,9 @@ function endQuiz() {
 function restartQuiz() {
     currentQuestionIndex = 0;
     score = 0;
+
+    // Shuffle questions again for a new random order
+    shuffleQuestions();
 
     document.getElementById('question-container').innerHTML = `
         <h2 id="question"></h2>
